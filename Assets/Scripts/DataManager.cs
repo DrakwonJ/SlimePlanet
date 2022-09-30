@@ -11,6 +11,19 @@ public class RankItem
     public string rank;
 }
 
+public class UPostItem
+{
+    public string title;
+    public string content;
+    public DateTime reservationDate;
+    public DateTime expirationDate;
+    public string rewardType;
+    public int rewardNum;
+    public string inDate;
+    public PostType postType;
+}
+
+
 public  class DataManager : MonoBehaviour
 {
     public static DataManager dataManager { get; set; }
@@ -147,6 +160,8 @@ public  class DataManager : MonoBehaviour
     public List<RankItem> avgRank = new List<RankItem>();
     public List<RankItem> maxRank = new List<RankItem>();
     Param param = new Param();
+
+    public List<UPostItem> postItemList = new List<UPostItem>();
 
     private void Awake()
     {
@@ -397,6 +412,78 @@ public  class DataManager : MonoBehaviour
                 slimeMaxPower = Int32.Parse(returnData["slimeMaxPower"].ToString());
                 slimeAveragePower = float.Parse(returnData["slimeAveragePower"].ToString());
                 break;
+        }
+    }
+
+    public void GetPost()
+    {
+        int limit = 50;
+        BackendReturnObject bro = Backend.UPost.GetPostList(PostType.Admin, limit);
+        if (!bro.IsSuccess())
+        {
+            Debug.LogError(bro.ToString());
+            return;
+        }
+        JsonData postListJson = bro.GetReturnValuetoJSON()["postList"];
+
+
+        for(int i = 0; i < postListJson.Count; i++)
+        {
+            UPostItem postItem = new UPostItem();
+            postItem.content = postListJson[i]["content"].ToString();
+            postItem.expirationDate = DateTime.Parse(postListJson[i]["expirationDate"].ToString());
+            postItem.reservationDate = DateTime.Parse(postListJson[i]["reservationDate"].ToString());
+            postItem.title = postListJson[i]["title"].ToString();
+            postItem.inDate = postListJson[i]["inDate"].ToString();
+            postItem.postType = PostType.Admin;
+
+            if (postListJson[i]["items"].Count > 0)
+            {
+                for(int itemNum = 0;itemNum < postListJson[i]["items"].Count; itemNum++)
+                {
+                    if(postListJson[i]["items"][itemNum]["item"]["name"].ToString() == "jem")
+                        postItem.rewardType = "jem";
+                    else if (postListJson[i]["items"][itemNum]["item"]["name"].ToString() == "money")
+                        postItem.rewardType = "money";
+                    postItem.rewardNum = Int32.Parse(postListJson[i]["items"][itemNum]["itemCount"].ToString());
+                }
+            }
+            postItemList.Add(postItem);
+        }
+
+        bro = Backend.UPost.GetPostList(PostType.Rank, limit);
+        if (!bro.IsSuccess())
+        {
+            Debug.LogError(bro.ToString());
+            return;
+        }
+        postListJson = bro.GetReturnValuetoJSON()["postList"];
+
+        for (int i = 0; i < postListJson.Count; i++)
+        {
+            UPostItem postItem = new UPostItem();
+            postItem.content = postListJson[i]["content"].ToString();
+            postItem.expirationDate = DateTime.Parse(postListJson[i]["expirationDate"].ToString());
+            postItem.reservationDate = DateTime.Parse(postListJson[i]["reservationDate"].ToString());
+            postItem.title = postListJson[i]["title"].ToString();
+            postItem.inDate = postListJson[i]["inDate"].ToString();
+            postItem.postType = PostType.Rank;
+            postItem.title=postItem.title.Replace("sumPowerRanking", "ÇÕ°èÆÄ¿ö ·©Å·");
+            postItem.title=postItem.title.Replace("maxPowerRanking", "ÃÖ°íÆÄ¿ö ·©Å·");
+            postItem.title=postItem.title.Replace("averageRanking", "Æò±ÕÆÄ¿ö ·©Å·");
+
+            if (postListJson[i]["items"].Count > 0)
+            {
+                for (int itemNum = 0; itemNum < postListJson[i]["items"].Count; itemNum++)
+                {
+                    if (postListJson[i]["items"][itemNum]["item"]["name"].ToString() == "jem")
+                        postItem.rewardType = "jem";
+                    else if (postListJson[i]["items"][itemNum]["item"]["name"].ToString() == "money")
+                        postItem.rewardType = "money";
+                    postItem.rewardNum = Int32.Parse(postListJson[i]["items"][itemNum]["itemCount"].ToString());
+                }
+            }
+            postItemList.Add(postItem);
         }
     }
 

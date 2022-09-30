@@ -50,6 +50,7 @@ public class StartScene : MonoBehaviour
             DataManager.dataManager.GetDataFromBro("DailyQuest");
             DataManager.dataManager.GetDataFromBro("WeeklyQuest");
             DataManager.dataManager.GetRank();
+            DataManager.dataManager.GetPost();
             PlanetManager.planetManager.InstantitatePlanet();
             EggManager.eggManager.SwitchCodetoEgg();
             Fade();
